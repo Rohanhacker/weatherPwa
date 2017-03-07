@@ -2,6 +2,34 @@
 (function() {
   'use strict';
 
+  var injectedForecast = {
+    key: 'newyork',
+    label: 'New York, NY',
+    currently: {
+      time: 1453489481,
+      summary: 'Clear',
+      icon: 'partly-cloudy-day',
+      temperature: 52.74,
+      apparentTemperature: 74.34,
+      precipProbability: 0.20,
+      humidity: 0.77,
+      windBearing: 125,
+      windSpeed: 1.52
+    },
+    daily: {
+      data: [
+        {icon: 'clear-day', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'rain', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'snow', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'sleet', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'fog', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'wind', temperatureMax: 55, temperatureMin: 34},
+        {icon: 'partly-cloudy-day', temperatureMax: 55, temperatureMin: 34}
+      ]
+    }
+  };
+
+
   var weatherAPIUrlBase = 'https://publicdata-weather.firebaseio.com/';
 
   var app = {
@@ -30,6 +58,11 @@
     var selected = select.options[select.selectedIndex];
     var key = selected.value;
     var label = selected.textContent;
+    var city = {
+      'key': key,
+      'label': label
+    };
+    app.saveCity(city);
     app.getForecast(key, label);
     app.selectedCities.push({key: key, label: label});
     app.toggleAddDialog(false);
@@ -124,4 +157,31 @@
     });
   };
 
+  app.saveCity = function(city) {
+    localforage.setItem(city.key, city.label, function (err) {
+      console.log(err);
+    });
+  };
+
+  localforage.length().then(function(numberOfKeys) {
+      if(numberOfKeys > 0) {
+        localforage.iterate(function(label, key, iterationNumber) {
+          console.log([key, label]);
+          app.getForecast(key, label);
+          app.selectedCities.push({key: key, label: label});
+        }).then(function() {
+            console.log('Iteration has completed');
+        }).catch(function(err) {
+          console.log(err);
+        });
+      } else {
+        app.updateForecastCard(injectedForecast);
+      }
+  }).catch(function(err) {
+      console.log(err);
+  });
+
 })();
+
+// 1 s=fn to save city that user has added
+// 2 check if user have any saved cities if than update cards for those cities e;se injectedData
