@@ -180,8 +180,11 @@
   }).catch(function(err) {
       console.log(err);
   });
-
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+     .register('/sw.js')
+     .then(function() { 
+        console.log('Service Worker Registered'); 
+    });
+  }
 })();
-
-// 1 s=fn to save city that user has added
-// 2 check if user have any saved cities if than update cards for those cities e;se injectedData
